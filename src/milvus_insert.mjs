@@ -3,30 +3,11 @@ import { existsSync, readFileSync, readdirSync } from "fs";
 import { join } from "path";
 import { MilvusClient, DataType, IndexType, MetricType } from "@zilliz/milvus2-sdk-node";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
-import { OpenAIEmbeddings } from "@langchain/openai";
+import { embeddings } from "./lib/embeddings.mjs";
 
 const COLLECTION = process.env.MILVUS_COLLECTION ?? 'rag_docs';
 const MILVUS_ADDRESS =
   process.env.MILVUS_URI?.replace(/^https?:\/\//, '') ?? 'localhost:19530';
-
-const embeddingDimensions = Number(process.env.OPENAI_EMBEDDING_DIMENSIONS);
-
-const embeddings = new OpenAIEmbeddings({
-  apiKey:
-    process.env.OPENAI_EMBEDDING_API_KEY ?? process.env.OPENAI_API_KEY,
-  model:
-    process.env.OPENAI_EMBEDDING_MODEL ??
-    'text-embedding-3-small',
-  dimensions: Number.isFinite(embeddingDimensions)
-    ? embeddingDimensions
-    : undefined,
-  configuration: {
-    baseURL:
-      process.env.OPENAI_EMBEDDING_BASE_URL ??
-      process.env.OPENAI_BASE_URL ??
-      'https://api.openai.com/v1',
-  },
-});
 
 async function loadChunks(dataDir = "./data") {
     if (!existsSync(dataDir)) {
